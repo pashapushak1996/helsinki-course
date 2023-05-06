@@ -1,18 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Persons } from "./components/Persons.jsx";
 import { PersonForm } from "./components/PersonForm.jsx";
 import { Filter } from "./components/Filter.jsx";
+import axios from "axios";
+
+const BASE_URL = 'http://localhost:3001';
 
 const App = () => {
-    const [persons, setPersons] = useState([
-        {
-            id: Date.now().toString(),
-            name: 'Arto Hellas',
-            number: '39-44-4433567'
-        }
-    ]);
-
+    const [persons, setPersons] = useState([]);
     const [search, setSearch] = useState('');
+
+    const fetchPersons = () => {
+        axios
+            .get(BASE_URL + '/persons')
+            .then((response) => {
+                setPersons(response.data)
+            });
+    }
+
+    useEffect(fetchPersons, []);
 
     const handleSearchChange = ({ target }) => {
         setSearch(target.value);
