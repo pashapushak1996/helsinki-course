@@ -1,0 +1,21 @@
+.notification {
+    padding: 10px;
+
+    background-color: #9f9e9e;
+
+    border: 2px solid;
+
+    margin-bottom: 1rem;
+}
+
+.notification--success {
+    color: green;
+
+    border-color: green;
+}
+
+.notification--error {
+    color: orangered;
+
+    border-color: orangered;
+}

@@ -4,10 +4,12 @@ import { PersonForm } from "./components/PersonForm.jsx";
 import { Filter } from "./components/Filter.jsx";
 import axios from "axios";
 import { personsApi } from "./services/persons.js";
+import { Notification } from "./components/notification/Notification.jsx";
 
 const App = () => {
     const [persons, setPersons] = useState([]);
     const [search, setSearch] = useState('');
+    const [message, setMessage] = useState(null);
 
     useEffect(fetchPersons, []);
 
@@ -25,11 +27,24 @@ const App = () => {
 
     // This is for updating person
     const updatePersonNumber = (id, newPerson) => {
-        personsApi.update(id, newPerson).then((updatedPerson) => {
-            const changedPersons = persons.map((person) => person.id === id ? updatedPerson : person);
+        personsApi.update(id, newPerson)
+            .then((updatedPerson) => {
+                const changedPersons = persons.map((person) => person.id === id ? updatedPerson : person);
 
-            setPersons(changedPersons);
-        })
+                setPersons(changedPersons);
+            })
+            .catch(() => {
+                setPersons(persons.filter((person) => person.id !== id));
+                setMessage({
+                    type: 'error',
+                    body: `Information of ${ newPerson.name } has already been removed from server`
+                });
+            })
+            .finally(() => {
+                setTimeout(() => {
+                    setMessage(null)
+                }, 3000)
+            })
     }
 
     // This is for deleting person
@@ -64,7 +79,14 @@ const App = () => {
             return;
         }
 
+        setMessage({ type: 'success', body: `Added ${ name }` });
+
         createPerson(newPerson);
+
+
+        setTimeout(() => {
+            setMessage(null);
+        }, 4000)
     };
 
 
@@ -75,6 +97,7 @@ const App = () => {
     return (
         <div>
             <h2>Phonebook</h2>
+            <Notification message={ message }/>
             <Filter search={ search } handleSearchChange={ handleSearchChange }/>
             <h2>Numbers</h2>
             <PersonForm addPerson={ addPerson }/>
