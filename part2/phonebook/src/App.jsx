@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Persons } from "./components/Persons.jsx";
 import { PersonForm } from "./components/PersonForm.jsx";
 import { Filter } from "./components/Filter.jsx";
-import axios from "axios";
 import { personsApi } from "./services/persons.js";
 import { Notification } from "./components/notification/Notification.jsx";
 
@@ -29,12 +28,14 @@ const App = () => {
     const updatePersonNumber = (id, newPerson) => {
         personsApi.update(id, newPerson)
             .then((updatedPerson) => {
-                const changedPersons = persons.map((person) => person.id === id ? updatedPerson : person);
+                const changedPersons = persons.map((person) => person._id === id
+                    ? updatedPerson
+                    : person);
 
                 setPersons(changedPersons);
             })
             .catch(() => {
-                setPersons(persons.filter((person) => person.id !== id));
+                setPersons(persons.filter((person) => person._id !== id));
                 setMessage({
                     type: 'error',
                     body: `Information of ${ newPerson.name } has already been removed from server`
@@ -51,42 +52,42 @@ const App = () => {
     const deletePerson = (id) => {
         personsApi.delete(id).then(() => {
             alert(`person ${ id } deleted`);
-            setPersons(persons.filter((person) => person.id !== id));
+            setPersons(persons.filter((person) => person._id !== id));
         });
     }
 
-    // This is for creating person
-    const createPerson = (person) => {
-        personsApi.create(person)
-            .then((newPerson) => {
-                setPersons(persons.concat(newPerson));
-            });
-    }
+    const addPerson = async (name, number) => {
+        try {
 
-    const addPerson = (name, number) => {
-        const newPerson = { name, number };
+            const newPerson = { name, number };
 
 
-        const foundPerson = persons.find((person) => person.name === name);
+            const foundPerson = persons.find((person) => person.name === name);
 
-        if (foundPerson) {
-            const replaceNumberConfirmation = confirm(`${ name } is already added to phonebook, replace the old number with a new one`);
+            if (foundPerson) {
+                const replaceNumberConfirmation = confirm(`${ name } is already added to phonebook, replace the old number with a new one`);
 
-            if (replaceNumberConfirmation) {
-                updatePersonNumber(foundPerson.id, { ...foundPerson, number })
+                if (replaceNumberConfirmation) {
+                    updatePersonNumber(foundPerson._id, { ...foundPerson, number })
+                }
+
+                return;
             }
 
-            return;
+            const createdPerson = await personsApi.create(newPerson);
+
+            setPersons(persons.concat(createdPerson));
+        } catch (e) {
+            setMessage({
+                type: 'error',
+                body: e.response.data.error
+            });
+
+        } finally {
+            setTimeout(() => {
+                setMessage(null);
+            }, 4000)
         }
-
-        setMessage({ type: 'success', body: `Added ${ name }` });
-
-        createPerson(newPerson);
-
-
-        setTimeout(() => {
-            setMessage(null);
-        }, 4000)
     };
 
 

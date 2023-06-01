@@ -11,7 +11,7 @@ export const Persons = ({ persons, deletePerson }) => {
         <>
             { persons.map((person) =>
                 <Person key={ person.name }
-                        deletePerson={ () => handleDelete(person.id) }
+                        deletePerson={ () => handleDelete(person._id) }
                         name={ person.name }
                         number={ person.number }/>) }
         </>
